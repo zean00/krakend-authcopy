@@ -38,10 +38,13 @@ func New(logger logging.Logger, config config.ExtraConfig) gin.HandlerFunc {
 			c.Request.Header.Set(authHeader, "Bearer "+cookie.Value)
 		}
 
-		query, ok := c.Request.URL.Query()[cfg.QueryKey]
-		if ok {
+		query := c.Request.URL.Query().Get(cfg.QueryKey)
+		if query != "" {
 			logger.Debug("[authcopy] Copying from query")
-			c.Request.Header.Set(authHeader, "Bearer "+query[0])
+			c.Request.Header.Set(authHeader, "Bearer "+query)
+			val := c.Request.URL.Query()
+			val.Del(cfg.QueryKey)
+			c.Request.URL.RawQuery = val.Encode()
 		}
 
 		c.Next()
